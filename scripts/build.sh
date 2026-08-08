@@ -12,7 +12,7 @@ clang \
   -Wextra \
   -Wpedantic \
   -g \
-  src/$TARGET_DIR/main.c \
+  src/$TARGET_DIR/*.c \
   -o src/$TARGET_DIR/build/main
 
 echo "================= BUILD END $TARGET_DIR ================="
