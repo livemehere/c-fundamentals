@@ -30,3 +30,13 @@ void * my_memcpy(void *dest, const void *src, size_t n) {
 
     return dest;
 }
+
+void * my_memset(void *ptr, int value, size_t n) {
+    unsigned char* p = ptr;
+
+    for (size_t i =0; i< n; i++) {
+       p[i] = value;
+    }
+
+    return ptr;
+}

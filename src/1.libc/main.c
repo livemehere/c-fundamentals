@@ -2,11 +2,22 @@
 #include "my_libc.h"
 
 int main() {
+    /* memcpy */
     int a = 10;
     int b;
     my_memcpy(&b, &a, sizeof(a));
-
     printf("a : %d, b: %d\n", a, b);
+
+    /* memset - 1(byte) */
+    char str[11];
+    my_memset(str, 'A', sizeof(str) - 1);
+    str[10] = '\0';
+    printf("str[10] : %s\n", str);
+
+    /* memset - 2(none-byte) */
+    int arr[10];
+    my_memset(arr, 0, sizeof(arr));
+    printf("arr[10] : %p\n", arr);
 
     return 0;
 }
