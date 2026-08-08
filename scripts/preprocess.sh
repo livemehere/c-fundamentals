@@ -5,43 +5,55 @@ set -e
 TARGET_DIR=$1
 AUTO_RUN="${2:-}"
 
-echo "================= PREPROCESS START $TARGET_DIR ================="
+SOURCE_DIR="src/$TARGET_DIR"
+BUILD_DIR="src/$TARGET_DIR/build"
+
+echo "================= BUILD START $TARGET_DIR ================="
 
 mkdir -p src/$TARGET_DIR/build
+echo "✅ create build directory $BUILD_DIR"
+
+for SOURCE in $SOURCE_DIR/*.c; do
+  echo "$SOURCE"
+done
+
+
+exit;
+
 
 # pre process
 clang \
   -std=c23 \
   -E \
-  src/$TARGET_DIR/main.c \
-  -o src/$TARGET_DIR/build/main.i
+  $SOURCE_DIR/main.c \
+  -o $BUILD_DIR/main.i
 
 # compile -> assembly
 clang \
   -std=c23 \
   -S \
-  src/$TARGET_DIR/build/main.i \
-  -o src/$TARGET_DIR/build/main.s
+  $BUILD_DIR/main.i \
+  -o $BUILD_DIR/main.s
 
 # assemble -> object
 clang \
   -c \
-  src/$TARGET_DIR/build/main.s \
-  -o src/$TARGET_DIR/build/main.o
+  $BUILD_DIR/main.s \
+  -o $BUILD_DIR/main.o
 
 clang \
   -c \
-  src/$TARGET_DIR/foo.c \
-  -o src/$TARGET_DIR/build/foo.o
+  $SOURCE_DIR/foo.c \
+  -o $BUILD_DIR/foo.o
 
 # link
 clang \
-  src/$TARGET_DIR/build/main.o \
-  src/$TARGET_DIR/build/foo.o \
-  -o src/$TARGET_DIR/build/main
+  $BUILD_DIR/main.o \
+  $BUILD_DIR/foo.o \
+  -o $BUILD_DIR/main
 
 echo "================= PREPROCESS END $TARGET_DIR ================="
 
 if [ "$AUTO_RUN" = "--run" ]; then
-  ./src/$TARGET_DIR/build/main
+  ./$BUILD_DIR/main
 fi
