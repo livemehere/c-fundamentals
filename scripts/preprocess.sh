@@ -29,10 +29,19 @@ clang \
   src/$TARGET_DIR/build/main.s \
   -o src/$TARGET_DIR/build/main.o
 
+clang \
+  -c \
+  src/$TARGET_DIR/foo.c \
+  -o src/$TARGET_DIR/build/foo.o
+
 # link
 clang \
   src/$TARGET_DIR/build/main.o \
+  src/$TARGET_DIR/build/foo.o \
   -o src/$TARGET_DIR/build/main
 
-
 echo "================= PREPROCESS END $TARGET_DIR ================="
+
+if [ "$AUTO_RUN" = "--run" ]; then
+  ./src/$TARGET_DIR/build/main
+fi
