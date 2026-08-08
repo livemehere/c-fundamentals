@@ -3,6 +3,16 @@
 set -e
 shopt -s nullglob
 
+#
+# args
+#
+
+if [[ $# -lt 1 ]]; then
+  echo "Usage:"
+  echo "  ./build.sh <target_dir> [--run] [--lib=static|dynamic]"
+  exit 1
+fi
+
 TARGET_DIR="$1"
 shift
 
@@ -24,7 +34,9 @@ while [[ $# -gt 0 ]]; do
       ;;
 
     *)
-      echo "❌ Unknown option: $1"
+      echo "❌ unknown option: $1"
+      echo "Usage:"
+      echo "  ./build.sh <target_dir> [--run] [--lib=static|dynamic]"
       exit 1
       ;;
   esac
@@ -32,6 +44,10 @@ while [[ $# -gt 0 ]]; do
   shift
 done
 
+
+#
+# path
+#
 
 SOURCE_DIR="src/$TARGET_DIR"
 LIB_DIR="$SOURCE_DIR/lib"
@@ -41,11 +57,14 @@ echo "================= BUILD START $TARGET_DIR ================="
 
 mkdir -p "$BUILD_DIR"
 
-OBJECT_FILES=()
+echo " ✅ create build directory: $BUILD_DIR"
+
 
 #
-# source
+# compile main sources
 #
+
+OBJECT_FILES=()
 
 for SOURCE in "$SOURCE_DIR"/*.c; do
   NAME="$(basename "$SOURCE" .c)"
@@ -54,17 +73,31 @@ for SOURCE in "$SOURCE_DIR"/*.c; do
   ASSEMBLY="$BUILD_DIR/$NAME.s"
   OBJECT="$BUILD_DIR/$NAME.o"
 
+  echo " 🔨 compile: $SOURCE"
+
+  #
+  # preprocess
+  #
+
   clang \
     -std=c23 \
     -E \
     "$SOURCE" \
     -o "$PREPROCESSED"
 
+  #
+  # compile -> assembly
+  #
+
   clang \
     -std=c23 \
     -S \
     "$PREPROCESSED" \
     -o "$ASSEMBLY"
+
+  #
+  # assemble -> object
+  #
 
   clang \
     -c \
@@ -76,60 +109,92 @@ done
 
 
 #
+# print objects
+#
+
+echo
+echo "---- objects ----"
+
+for OBJECT in "${OBJECT_FILES[@]}"; do
+  echo " 📦 $OBJECT"
+done
+
+
+#
 # library
 #
 
 LINK_LIBS=()
 
 if [[ -n "$LIB_TYPE" ]]; then
+  echo
+  echo "---- library ($LIB_TYPE) ----"
+
   LIB_SOURCES=("$LIB_DIR"/*.c)
 
   if ((${#LIB_SOURCES[@]} == 0)); then
-    echo "❌ --lib=$LIB_TYPE specified, but no library sources found"
-    exit 1
-  fi
+    echo " ⚠️ no library sources found"
+    echo "    $LIB_DIR/*.c"
+    echo "    skip library build"
+  else
+    LIB_BUILD_DIR="$BUILD_DIR/lib"
 
-  echo "---- lib ($LIB_TYPE) ----"
+    mkdir -p "$LIB_BUILD_DIR"
 
-  mkdir -p "$BUILD_DIR/lib"
+    LIB_OBJECT_FILES=()
 
-  LIB_OBJECT_FILES=()
+    #
+    # compile library sources
+    #
 
-  for LIB_SOURCE in "${LIB_SOURCES[@]}"; do
-    NAME="$(basename "$LIB_SOURCE" .c)"
-    OBJ="$BUILD_DIR/lib/$NAME.o"
+    for LIB_SOURCE in "${LIB_SOURCES[@]}"; do
+      NAME="$(basename "$LIB_SOURCE" .c)"
+      OBJECT="$LIB_BUILD_DIR/$NAME.o"
 
-    clang \
-      -std=c23 \
-      -c \
-      "$LIB_SOURCE" \
-      -o "$OBJ"
-
-    LIB_OBJECT_FILES+=("$OBJ")
-  done
-
-  case "$LIB_TYPE" in
-    static)
-      STATIC_LIB_PATH="$BUILD_DIR/lib/lib.a"
-
-      ar rcs \
-        "$STATIC_LIB_PATH" \
-        "${LIB_OBJECT_FILES[@]}"
-
-      LINK_LIBS+=("$STATIC_LIB_PATH")
-      ;;
-
-    dynamic)
-      DYNAMIC_LIB_PATH="$BUILD_DIR/lib/lib.dylib"
+      echo " 🔨 compile library: $LIB_SOURCE"
 
       clang \
-        -dynamiclib \
-        "${LIB_OBJECT_FILES[@]}" \
-        -o "$DYNAMIC_LIB_PATH"
+        -std=c23 \
+        -c \
+        "$LIB_SOURCE" \
+        -o "$OBJECT"
 
-      LINK_LIBS+=("$DYNAMIC_LIB_PATH")
-      ;;
-  esac
+      LIB_OBJECT_FILES+=("$OBJECT")
+    done
+
+
+    #
+    # create library
+    #
+
+    case "$LIB_TYPE" in
+      static)
+        LIB_PATH="$LIB_BUILD_DIR/lib.a"
+
+        echo " 📚 create static library: $LIB_PATH"
+
+        ar \
+          rcs \
+          "$LIB_PATH" \
+          "${LIB_OBJECT_FILES[@]}"
+
+        LINK_LIBS+=("$LIB_PATH")
+        ;;
+
+      dynamic)
+        LIB_PATH="$LIB_BUILD_DIR/lib.dylib"
+
+        echo " 📚 create dynamic library: $LIB_PATH"
+
+        clang \
+          -dynamiclib \
+          "${LIB_OBJECT_FILES[@]}" \
+          -o "$LIB_PATH"
+
+        LINK_LIBS+=("$LIB_PATH")
+        ;;
+    esac
+  fi
 fi
 
 
@@ -137,12 +202,17 @@ fi
 # link
 #
 
+echo
+echo "---- link ----"
+
 clang \
   "${OBJECT_FILES[@]}" \
   "${LINK_LIBS[@]}" \
   -o "$BUILD_DIR/main"
 
-echo " ✅ link success!"
+echo " ✅ link success: $BUILD_DIR/main"
+
+echo
 echo "================= BUILD END $TARGET_DIR ================="
 
 
@@ -151,5 +221,8 @@ echo "================= BUILD END $TARGET_DIR ================="
 #
 
 if [[ "$AUTO_RUN" == true ]]; then
+  echo
+  echo "---- run ----"
+
   "$BUILD_DIR/main"
 fi
