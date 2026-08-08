@@ -18,6 +18,7 @@ shift
 
 AUTO_RUN=false
 LIB_TYPE=""
+OPT="-O2"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -91,6 +92,7 @@ for SOURCE in "$SOURCE_DIR"/*.c; do
 
   clang \
     -std=c23 \
+    $OPT \
     -S \
     "$PREPROCESSED" \
     -o "$ASSEMBLY"
@@ -155,6 +157,7 @@ if [[ -n "$LIB_TYPE" ]]; then
 
       clang \
         -std=c23 \
+        $OPT \
         -c \
         "$LIB_SOURCE" \
         -o "$OBJECT"
