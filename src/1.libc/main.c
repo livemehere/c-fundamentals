@@ -2,9 +2,11 @@
 #include "my_libc.h"
 
 int main() {
+    int a = 10;
+    int b;
+    my_memcpy(&b, &a, sizeof(a));
 
-    const char* str = "Hello";
-    printf("size of %s is : %zu\n", str, my_strlen(str));
+    printf("a : %d, b: %d\n", a, b);
 
     return 0;
 }

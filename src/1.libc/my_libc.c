@@ -18,3 +18,15 @@ size_t my_strlen(const char *str) {
 
     return len;
 }
+
+void * my_memcpy(void *dest, const void *src, size_t n) {
+    // type free, copy by byte
+    char* d = dest;
+    const char* s = src;
+
+    for (size_t i=0; i<n; i++) {
+        d[i] = s[i];
+    }
+
+    return dest;
+}
