@@ -18,7 +18,7 @@ shift
 
 AUTO_RUN=false
 LIB_TYPE=""
-OPT="-O2"
+OPT="-O0"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
