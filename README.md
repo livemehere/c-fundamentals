@@ -6,3 +6,10 @@
 clang --version # Apple clang version 17.0.0 (clang-1700.6.3.2)
 lldb --version # lldb-1703.0.236.21
 ```
+
+## build and run
+
+```bash
+./scripts/build.sh template --run
+./scripts/run.sh template
+```
