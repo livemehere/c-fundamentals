@@ -2,63 +2,63 @@
 
 set -e
 
-TARGET_DIR=$1
+TARGET_DIR="$1"
 AUTO_RUN="${2:-}"
 
 SOURCE_DIR="src/$TARGET_DIR"
-BUILD_DIR="src/$TARGET_DIR/build"
+BUILD_DIR="$SOURCE_DIR/build"
 
 echo "================= BUILD START $TARGET_DIR ================="
 
-mkdir -p src/$TARGET_DIR/build
+mkdir -p "$BUILD_DIR"
 echo " ✅ create build directory $BUILD_DIR"
 
 OBJECT_FILES=()
 
-for SOURCE in $SOURCE_DIR/*.c; do
-  NAME="$(basename $SOURCE .c)"
+for SOURCE in "$SOURCE_DIR"/*.c; do
+  NAME="$(basename "$SOURCE" .c)"
 
   PREPROCESSED="$BUILD_DIR/$NAME.i"
   ASSEMBLY="$BUILD_DIR/$NAME.s"
   OBJECT="$BUILD_DIR/$NAME.o"
 
- # pre process
- clang \
-   -std=c23 \
-   -E \
-   $SOURCE \
-   -o $PREPROCESSED
+  echo " 🔨 $NAME.c"
 
- # compile -> assembly
- clang \
-   -std=c23 \
-   -S \
-   $PREPROCESSED \
-   -o $ASSEMBLY
+  # preprocess
+  clang \
+    -std=c23 \
+    -E \
+    "$SOURCE" \
+    -o "$PREPROCESSED"
 
- # assemble -> object
- clang \
-   -c \
-   $ASSEMBLY\
-   -o $OBJECT
+  # compile -> assembly
+  clang \
+    -std=c23 \
+    -S \
+    "$PREPROCESSED" \
+    -o "$ASSEMBLY"
 
- OBJECT_FILES+=("$OBJECT")
+  # assemble -> object
+  clang \
+    -c \
+    "$ASSEMBLY" \
+    -o "$OBJECT"
 
+  OBJECT_FILES+=("$OBJECT")
 done
 
-for obj in ${OBJECT_FILES[@]}; do
-  echo "📂 $obj"
+for obj in "${OBJECT_FILES[@]}"; do
+  echo " 📂 $obj"
 done
 
 # link
 clang \
-  ${OBJECT_FILES[@]} \
-  -o $BUILD_DIR/main
+  "${OBJECT_FILES[@]}" \
+  -o "$BUILD_DIR/main"
 
 echo " ✅ link success!"
+echo "================= BUILD END $TARGET_DIR ================="
 
-echo "================= PREPROCESS END $TARGET_DIR ================="
-
-if [ "$AUTO_RUN" = "--run" ]; then
-  ./$BUILD_DIR/main
+if [[ "$AUTO_RUN" == "--run" ]]; then
+  "$BUILD_DIR/main"
 fi
