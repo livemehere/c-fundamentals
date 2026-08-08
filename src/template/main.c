@@ -1,9 +1,9 @@
 #include "foo.h"
-#include "foo.h"
+#include "lib/math.h"
 
 int main() {
-    int a = 10;
-    int *p = &a;
+
+    int res = add(1,2);
 
     foo();
 

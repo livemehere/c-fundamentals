@@ -6,6 +6,7 @@ TARGET_DIR="$1"
 AUTO_RUN="${2:-}"
 
 SOURCE_DIR="src/$TARGET_DIR"
+LIB_DIR="src/$TARGET_DIR/lib"
 BUILD_DIR="$SOURCE_DIR/build"
 
 echo "================= BUILD START $TARGET_DIR ================="
@@ -21,8 +22,6 @@ for SOURCE in "$SOURCE_DIR"/*.c; do
   PREPROCESSED="$BUILD_DIR/$NAME.i"
   ASSEMBLY="$BUILD_DIR/$NAME.s"
   OBJECT="$BUILD_DIR/$NAME.o"
-
-  echo " 🔨 $NAME.c"
 
   # preprocess
   clang \
@@ -51,9 +50,33 @@ for obj in "${OBJECT_FILES[@]}"; do
   echo " 📂 $obj"
 done
 
+echo "---- lib ----"
+
+mkdir -p $BUILD_DIR/lib
+
+LIB_OBJECT_FILES=()
+STATIC_LIB_PATH=$BUILD_DIR/lib/lib.a
+
+for LIB_SOURCE in "$LIB_DIR"/*.c; do
+  NAME="$(basename "$LIB_SOURCE" .c)"
+  OBJ="$BUILD_DIR/lib/$NAME.o"
+  clang \
+    -std=c23 \
+    -c \
+    "$LIB_SOURCE" \
+    -o $OBJ
+
+  LIB_OBJECT_FILES+=($OBJ)
+
+  echo $OBJ
+done
+
+ar rcs $STATIC_LIB_PATH ${LIB_OBJECT_FILES[@]}
+
 # link
 clang \
   "${OBJECT_FILES[@]}" \
+  "$STATIC_LIB_PATH" \
   -o "$BUILD_DIR/main"
 
 echo " ✅ link success!"
