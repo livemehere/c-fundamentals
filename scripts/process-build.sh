@@ -56,6 +56,7 @@ mkdir -p $BUILD_DIR/lib
 
 LIB_OBJECT_FILES=()
 STATIC_LIB_PATH=$BUILD_DIR/lib/lib.a
+DYNAMIC_LIB_PATH=$BUILD_DIR/lib/lib.dylib
 
 for LIB_SOURCE in "$LIB_DIR"/*.c; do
   NAME="$(basename "$LIB_SOURCE" .c)"
@@ -73,10 +74,12 @@ done
 
 ar rcs $STATIC_LIB_PATH ${LIB_OBJECT_FILES[@]}
 
+clang -dynamiclib ${LIB_OBJECT_FILES[@]} -o $DYNAMIC_LIB_PATH
+
 # link
 clang \
   "${OBJECT_FILES[@]}" \
-  "$STATIC_LIB_PATH" \
+  "$DYNAMIC_LIB_PATH" \
   -o "$BUILD_DIR/main"
 
 echo " ✅ link success!"
