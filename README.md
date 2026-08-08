@@ -13,6 +13,6 @@ bear --version # bear 4.2.0
 > `brew install bear` to create `compile_commands.json` automatically.
 
 ```bash
-bear -- ./scripts/build.sh template --run
-./scripts/run.sh template
+bear -- ./scripts/build.sh template --run # quick build
+bear -- ./scripts/process-build.sh template --run # remain all compile step
 ```
