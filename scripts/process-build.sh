@@ -9,7 +9,7 @@ shopt -s nullglob
 
 if [[ $# -lt 1 ]]; then
   echo "Usage:"
-  echo "  ./build.sh <target_dir> [--run] [--lib=static|dynamic]"
+  echo "  ./build.sh <target_dir> [--run] [--debug] [--lib=static|dynamic]"
   exit 1
 fi
 
@@ -19,11 +19,16 @@ shift
 AUTO_RUN=false
 LIB_TYPE=""
 OPT="-O0"
+DEBUG_FLAG=""
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --run)
       AUTO_RUN=true
+      ;;
+
+    --debug)
+      DEBUG_FLAG="-g"
       ;;
 
     --lib=static)
@@ -37,7 +42,7 @@ while [[ $# -gt 0 ]]; do
     *)
       echo "❌ unknown option: $1"
       echo "Usage:"
-      echo "  ./build.sh <target_dir> [--run] [--lib=static|dynamic]"
+      echo "  ./build.sh <target_dir> [--run] [--debug] [--lib=static|dynamic]"
       exit 1
       ;;
   esac
@@ -47,12 +52,12 @@ done
 
 
 #
-# path
+# path (루트 build/ 폴더로 고정)
 #
 
 SOURCE_DIR="src/$TARGET_DIR"
 LIB_DIR="$SOURCE_DIR/lib"
-BUILD_DIR="$SOURCE_DIR/build"
+BUILD_DIR="build" # 👈 기존 "$SOURCE_DIR/build"에서 프로젝트 최상위 "build"로 변경!
 
 echo "================= BUILD START $TARGET_DIR ================="
 
@@ -93,6 +98,7 @@ for SOURCE in "$SOURCE_DIR"/*.c; do
   clang \
     -std=c23 \
     $OPT \
+    $DEBUG_FLAG \
     -S \
     "$PREPROCESSED" \
     -o "$ASSEMBLY"
@@ -158,6 +164,7 @@ if [[ -n "$LIB_TYPE" ]]; then
       clang \
         -std=c23 \
         $OPT \
+        $DEBUG_FLAG \
         -c \
         "$LIB_SOURCE" \
         -o "$OBJECT"
@@ -209,6 +216,7 @@ echo
 echo "---- link ----"
 
 clang \
+  $DEBUG_FLAG \
   "${OBJECT_FILES[@]}" \
   "${LINK_LIBS[@]}" \
   -o "$BUILD_DIR/main"
