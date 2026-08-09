@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 
 int write_example() {
     FILE *file = fopen("hello.txt", "w");
@@ -89,7 +90,29 @@ int read_by_bin() {
     return 0;
 }
 
+int read_file_all() {
+    FILE *file = fopen("hello.txt", "rj");
+    if (file == NULL) {
+        printf("fail to open file\n");
+        return 1;
+    }
+    fseek(file, 0, SEEK_END);
+    long size = ftell(file);
+    rewind(file);
+    printf("file size : %ld\n", size);
+
+    char *buffer = malloc(size + 1);
+    fread(buffer, 1, size, file);
+    buffer[size] = '\0';
+
+    printf("%s\n", buffer);
+
+    free(buffer);
+    return 0;
+}
+
 int main() {
-    read_by_bin();
+    read_file_all();
+
     return 0;
 }
