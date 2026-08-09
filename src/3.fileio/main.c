@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <fcntl.h>
+#include <unistd.h>
 
 int write_example() {
     FILE *file = fopen("hello.txt", "w");
@@ -112,7 +114,24 @@ int read_file_all() {
 }
 
 int main() {
-    read_file_all();
+    int fd = open("hello.txt", O_RDONLY);
+    if (fd == -1) {
+        perror("open");
+        return 1;
+    }
+
+    char buffer[128];
+
+    ssize_t n = read(fd, buffer, sizeof(buffer));
+    if (n == -1) {
+        perror("read");
+        close(fd);
+        return 1;
+    }
+
+    write(STDOUT_FILENO, buffer, n); // printf("%s\n", buffer);
+
+    close(fd);
 
     return 0;
 }
