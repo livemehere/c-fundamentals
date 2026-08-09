@@ -17,6 +17,9 @@ static inline void vector_init(Vector *v) {
     v->size = 0;
     v->capacity = 4;
     v->data = malloc(sizeof(int) * v->capacity);
+    if (!v->data) {
+        v->capacity = 0;
+    }
 }
 
 static inline int vector_get(Vector *v, size_t index) {
@@ -28,7 +31,7 @@ static inline int vector_get(Vector *v, size_t index) {
 }
 
 static inline bool vector_resize(Vector *v) {
-    size_t new_capacity = v->capacity * 2;
+    size_t new_capacity = v->capacity == 0 ? 4 : v->capacity * 2;
     int *temp = realloc(v->data, sizeof(int) * new_capacity);
     if (temp) {
         v->data = temp;
@@ -55,15 +58,40 @@ static inline bool vector_pop(Vector *v) {
         return false;
     }
 
-    v->data[v->size] = 0;
     v->size--;
+    v->data[v->size] = 0;
 
     return true;
 }
 
 static inline bool vector_erase(Vector *v, size_t index) {
+    if (index >= v->size) {
+        return false;
+    }
+
     memmove(&v->data[index], &v->data[index+1], sizeof(int) * (v->size - index - 1));
     v->size--;
+
+    return true;
+}
+
+static inline bool vector_insert(Vector*v, size_t index, int value) {
+    if (index > v->size) {
+        return false;
+    }
+
+    if (v->size >= v->capacity) {
+       if (!vector_resize(v)) {
+           return false;
+       }
+    }
+
+
+    memmove(&v->data[index+1], &v->data[index], sizeof(int) * (v->size - index));
+    v->data[index] = value;
+    v->size++;
+
+    return true;
 }
 
 

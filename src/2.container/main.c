@@ -21,6 +21,7 @@ int main() {
     vector_pop(&v);
 
     vector_erase(&v, 2);
+    vector_insert(&v, 1,99);
 
     for (int i=0; i< v.size; i++) {
         printf("%d\n", vector_get(&v, i));
