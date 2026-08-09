@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <string.h>
+
 #include "my_libc.h"
 
 int main() {
@@ -18,6 +20,9 @@ int main() {
     int arr[10];
     my_memset(arr, 0, sizeof(arr));
     printf("arr[10] : %p\n", arr);
+
+    int res = my_strcmp("Hellb", "Hellb");
+    printf("res : %d, %s\n", res, res < 0 ? "diff" : "same");
 
     return 0;
 }

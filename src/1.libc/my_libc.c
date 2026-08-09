@@ -40,3 +40,13 @@ void * my_memset(void *ptr, int value, size_t n) {
 
     return ptr;
 }
+
+int my_strcmp(const char *a, const char *b) {
+    while (*a != '\0' && *a == *b) {
+        ++a;
+        ++b;
+    }
+
+    return (int)(unsigned char)*a - (int)(unsigned char)*b;
+
+}
