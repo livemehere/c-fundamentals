@@ -26,15 +26,23 @@ int main() {
     my_memset(arr, 0, sizeof(arr));
     printf("arr[10] : %p\n", arr);
 
+    /* strcmp */
     int res = my_strcmp("Hellb", "Hellb");
     printf("res : %d, %s\n", res, res != 0 ? "diff" : "same");
 
-    char k = '\0';
-    if (k) {
-        printf("yes\n");
-    }else {
-        printf("no\n");
-    }
+    /* memcpy for string */
+    char src[] = "ABCD";
+    char dest[100];
+    my_memcpy(dest, src, sizeof(src));
+    printf("copied %s\n",dest);
+
+    /* strcat */
+    char before[50] = "KONG";
+    printf("size : %lu\n", sizeof(before));
+    my_strcat(before, " is KING");
+    printf("concat %s\n",before);
+    printf("size : %lu\n", sizeof(before));
+
 
     return 0;
 }

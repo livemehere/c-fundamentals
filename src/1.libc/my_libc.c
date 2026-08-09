@@ -51,3 +51,18 @@ int my_strcmp(const char *a, const char *b) {
     return (int)(unsigned char)*a - (int)(unsigned char)*b;
 
 }
+
+void my_strcat(char *dest, const char *src) {
+    char* p = dest;
+    while(* p != '\0') {
+        p++;
+    }
+
+    while (*src != '\0') {
+        *p = *src;
+        p++;
+        src++;
+    }
+
+    *p = '\0';
+}
