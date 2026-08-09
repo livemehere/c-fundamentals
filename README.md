@@ -10,8 +10,11 @@ bear --version # bear 4.2.0
 
 ## build and run
 
-> `brew install bear` to create `compile_commands.json` automatically.
+>`brew install bear` to create `compile_commands.json` automatically.
+ 
+for debugger : configure app in CLion ide manually
 
 ```bash
-bear -- ./scripts/process-build.sh <target_dir> --run --lib=static|dynamic
+# example
+bear -- ./scripts/process-build.sh <target_dir> --debug --clean && ./build/main
 ```

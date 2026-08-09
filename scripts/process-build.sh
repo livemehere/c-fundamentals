@@ -9,7 +9,7 @@ shopt -s nullglob
 
 if [[ $# -lt 1 ]]; then
   echo "Usage:"
-  echo "  ./build.sh <target_dir> [--run] [--debug] [--lib=static|dynamic]"
+  echo "  ./build.sh <target_dir> [--run] [--debug] [--clean] [--lib=static|dynamic]"
   exit 1
 fi
 
@@ -20,6 +20,7 @@ AUTO_RUN=false
 LIB_TYPE=""
 OPT="-O0"
 DEBUG_FLAG=""
+CLEAN=false
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -31,6 +32,10 @@ while [[ $# -gt 0 ]]; do
       DEBUG_FLAG="-g"
       ;;
 
+    --clean)
+      CLEAN=true
+      ;;
+
     --lib=static)
       LIB_TYPE="static"
       ;;
@@ -39,10 +44,10 @@ while [[ $# -gt 0 ]]; do
       LIB_TYPE="dynamic"
       ;;
 
-    *)
+      *)
       echo "❌ unknown option: $1"
       echo "Usage:"
-      echo "  ./build.sh <target_dir> [--run] [--debug] [--lib=static|dynamic]"
+      echo "  ./build.sh <target_dir> [--run] [--debug] [--clean] [--lib=static|dynamic]"
       exit 1
       ;;
   esac
@@ -60,6 +65,13 @@ LIB_DIR="$SOURCE_DIR/lib"
 BUILD_DIR="build" # 👈 기존 "$SOURCE_DIR/build"에서 프로젝트 최상위 "build"로 변경!
 
 echo "================= BUILD START $TARGET_DIR ================="
+
+if [[ "$CLEAN" == true ]]; then
+  if [[ -d "$BUILD_DIR" ]]; then
+    echo " 🧹 remove build directory: $BUILD_DIR"
+    rm -rf "$BUILD_DIR"
+  fi
+fi
 
 mkdir -p "$BUILD_DIR"
 
