@@ -4,6 +4,11 @@
 #include "my_libc.h"
 
 int main() {
+    /* strlen */
+    const char* name = "Kong";
+    int name_len = my_strlen(name);
+    printf("name %s len : %d\n", name, name_len);
+
     /* memcpy */
     int a = 10;
     int b;
@@ -22,7 +27,14 @@ int main() {
     printf("arr[10] : %p\n", arr);
 
     int res = my_strcmp("Hellb", "Hellb");
-    printf("res : %d, %s\n", res, res < 0 ? "diff" : "same");
+    printf("res : %d, %s\n", res, res != 0 ? "diff" : "same");
+
+    char k = '\0';
+    if (k) {
+        printf("yes\n");
+    }else {
+        printf("no\n");
+    }
 
     return 0;
 }

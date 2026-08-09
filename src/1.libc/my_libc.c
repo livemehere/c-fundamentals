@@ -12,7 +12,8 @@ size_t my_strlen(const char *str) {
      * o = 5
      * \0
      */
-    while (str[len] != '\0') {
+    while (*str) {
+        str++;
         len++;
     }
 
