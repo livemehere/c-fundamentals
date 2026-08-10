@@ -24,10 +24,11 @@ BuiltinResult run_builtin(char *args[]) {
             }
         } else if (args[2] != NULL) {
             fprintf(stderr, "cd: too many arguments\n");
-        }else {
-            if (chdir(path) == -1) {
-                perror("cd");
-            }
+            return BUILTIN_HANDLED;
+        }
+
+        if (chdir(path) == -1) {
+            perror("cd");
         }
 
         return BUILTIN_HANDLED;
