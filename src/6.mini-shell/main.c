@@ -21,6 +21,7 @@ BuiltinResult run_builtin(char *args[]) {
             path = getenv("HOME");
             if (path == NULL) {
                 fprintf(stderr, "cd: HOME is not set\n");
+                return BUILTIN_HANDLED;
             }
         } else if (args[2] != NULL) {
             fprintf(stderr, "cd: too many arguments\n");
@@ -37,23 +38,36 @@ BuiltinResult run_builtin(char *args[]) {
     return BUILTIN_NONE;
 }
 
-int main() {
+ssize_t read_input(char **input) {
+    size_t linecapp = 0;
+    ssize_t len = getline(input, &linecapp, stdin);
+    if (len == -1) {
+        if (ferror(stdin)) {
+            perror("getline\n");
+        }
+        return len;
+    }
+    (*input)[strcspn(*input, "\n")] = '\0';
+    return len;
+}
+
+
+int main(void) {
     while (1) {
         printf("$ ");
         // fflush(stdout);
 
         /* get clean input */
         char *input = NULL;
-        size_t linecapp = 0;
-        ssize_t len = getline(&input, &linecapp, stdin);
+        ssize_t len = read_input(&input);
         if (len == -1) {
-            perror("getline failed\n");
+            free(input);
+            break;
         }
-        input[strcspn(input, "\n")] = '\0';
 
         /* tokenize */
         char *args[64];
-        int argc = 0;
+        size_t argc = 0;
         char *token = strtok(input, " ");
         while (token != NULL && argc < (sizeof(args) / sizeof(args[0])) - 1) {
             args[argc++] = token;
@@ -62,6 +76,7 @@ int main() {
         args[argc] = NULL;
 
         if (args[0] == NULL) {
+            free(input);
             continue;
         }
 
