@@ -1,4 +1,3 @@
-#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -17,6 +16,20 @@ BuiltinResult run_builtin(char *args[]) {
     }
 
     if (strcmp(args[0], "cd") == 0) {
+        const char *path = args[1];
+        if (path == NULL) {
+            path = getenv("HOME");
+            if (path == NULL) {
+                fprintf(stderr, "cd: HOME is not set\n");
+            }
+        } else if (args[2] != NULL) {
+            fprintf(stderr, "cd: too many arguments\n");
+        }else {
+            if (chdir(path) == -1) {
+                perror("cd");
+            }
+        }
+
         return BUILTIN_HANDLED;
     }
 
@@ -46,6 +59,10 @@ int main() {
             token = strtok(NULL, " ");
         }
         args[argc] = NULL;
+
+        if (args[0] == NULL) {
+            continue;
+        }
 
         /* internal command */
         BuiltinResult result = run_builtin(args);
