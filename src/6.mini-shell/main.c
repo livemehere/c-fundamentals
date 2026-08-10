@@ -28,7 +28,16 @@ int main() {
 
         /* child */
         if (pid == 0) {
-            char *args[] = {input, NULL};
+            char *args[64];
+            int argc = 0;
+
+            char* token = strtok(input, " ");
+            while (token !=NULL && argc < (sizeof(args) / sizeof(args[0])) - 1) {
+                args[argc++] = token;
+                token = strtok(NULL, " ");
+            }
+            args[argc] = NULL;
+
             execvp(args[0], args);
 
             /* rich on failed only */
