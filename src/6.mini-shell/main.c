@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <fcntl.h>
 #include <sys/wait.h>
 
 typedef enum {
@@ -51,13 +52,21 @@ ssize_t read_input(char **input) {
     return len;
 }
 
+void tokenize_input(char *input, char **arr, size_t capacity) {
+    size_t argc = 0;
+    char *token = strtok(input, " ");
+    while (token != NULL && argc + 1 < capacity) {
+        arr[argc++] = token;
+        token = strtok(NULL, " ");
+    }
+    arr[argc] = NULL;
+}
 
 int main(void) {
     while (1) {
         printf("$ ");
         // fflush(stdout);
 
-        /* get clean input */
         char *input = NULL;
         ssize_t len = read_input(&input);
         if (len == -1) {
@@ -67,15 +76,44 @@ int main(void) {
 
         /* tokenize */
         char *args[64];
-        size_t argc = 0;
-        char *token = strtok(input, " ");
-        while (token != NULL && argc < (sizeof(args) / sizeof(args[0])) - 1) {
-            args[argc++] = token;
-            token = strtok(NULL, " ");
-        }
-        args[argc] = NULL;
-
+        tokenize_input(input, args, sizeof(args) / sizeof(args[0]));
         if (args[0] == NULL) {
+            free(input);
+            continue;
+        }
+
+        /* output redirection */
+        char *output_file = NULL;
+        int redirection_error = 0;
+        for (size_t i = 0; args[i] != NULL; i++) {
+            if (strcmp(args[i], ">") != 0) {
+                continue;
+            }
+
+            if (i == 0) {
+                fprintf(stderr, "syntax error: missing command before >\n");
+                redirection_error = 1;
+                break;
+            }
+
+            if (args[i + 1] == NULL) {
+                fprintf(stderr, "syntax error: missing file after >\n");
+                redirection_error = 1;
+                break;
+            }
+
+            if (args[i + 2] != NULL) {
+                fprintf(stderr, "syntax error: > and its file must be last\n");
+                redirection_error = 1;
+                break;
+            }
+
+            output_file = args[i + 1];
+            args[i] = NULL;
+            break;
+        }
+
+        if (redirection_error) {
             free(input);
             continue;
         }
@@ -102,6 +140,19 @@ int main(void) {
 
         /* child */
         if (pid == 0) {
+            if (output_file != NULL) {
+                int fd = open(output_file, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+                if (fd == -1) {
+                    perror("open");
+                    _exit(1);
+                }
+                if (dup2(fd, STDOUT_FILENO) == -1) {
+                    perror("dup2");
+                    close(fd);
+                    _exit(1);
+                }
+                close(fd);
+            }
             execvp(args[0], args);
 
             /* rich on failed only */
